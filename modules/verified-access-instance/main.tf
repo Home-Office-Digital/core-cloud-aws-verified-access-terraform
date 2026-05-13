@@ -17,8 +17,8 @@ data "aws_partition" "current" {}
 data "aws_wafv2_web_acl" "existing" {
   count = var.enable_waf ? 1 : 0
 
-  name  = var.waf_web_acl_name
-  scope = var.waf_web_acl_scope
+  name  = trimspace(var.waf_web_acl_name)
+  scope = upper(trimspace(var.waf_web_acl_scope))
 }
 
 ##-----------------------------------------------------------------------------

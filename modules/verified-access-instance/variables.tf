@@ -20,12 +20,22 @@ variable "waf_web_acl_name" {
   description = "Name of an existing WAFv2 Web ACL to associate when enable_waf is true."
   type        = string
   default     = ""
+
+  validation {
+    condition     = !var.enable_waf || length(trimspace(var.waf_web_acl_name)) > 0
+    error_message = "waf_web_acl_name must be a non-empty string when enable_waf is true."
+  }
 }
 
 variable "waf_web_acl_scope" {
   description = "Scope of the existing WAFv2 Web ACL (REGIONAL or CLOUDFRONT)."
   type        = string
   default     = "REGIONAL"
+
+  validation {
+    condition     = contains(["REGIONAL", "CLOUDFRONT"], upper(trimspace(var.waf_web_acl_scope)))
+    error_message = "waf_web_acl_scope must be either REGIONAL or CLOUDFRONT."
+  }
 }
 
 variable "use_centralized_log_bucket" {
