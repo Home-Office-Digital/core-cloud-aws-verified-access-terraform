@@ -32,7 +32,7 @@ locals {
   # future ID-format changes or non-hex mock ARNs in plan-time validation.
   verified_access_group_ids = {
     for name, arn in var.verified_access_group_arns :
-    name => regex("vagr-[a-z0-9]+$", arn)
+    name => try(regex("vagr-[a-z0-9]+$", arn), null)
   }
 
   # Flatten shared_groups to [{account_id, group_name, vagr_id}, ...]
