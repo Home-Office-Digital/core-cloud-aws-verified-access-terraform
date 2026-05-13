@@ -2,7 +2,7 @@ apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
   name: core-cloud-aws-verified-access-terraform
-  description: A repo for Core Cloud AWS Verfied Access Configuration.
+  description: A repo for Core Cloud AWS Verified Access Configuration.
   annotations:
     github.com/project-slug: Home-Office-Digital/core-cloud-aws-verified-access-terraform
 spec:
