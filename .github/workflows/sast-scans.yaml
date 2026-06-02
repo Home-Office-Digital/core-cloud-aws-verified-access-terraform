@@ -22,7 +22,7 @@ permissions:
 
 jobs:
   checkov-scan:
-    name: Run Checkov Scan
+    name: Run Terraform SAST
     uses: Home-Office-Digital/core-cloud-workflow-checkov-sast-scan/.github/workflows/checkov-scan-tfplan.yaml@54595cd1ed5d0bf9431fb9051c499098391dfb62
     with:
       path: '.'
