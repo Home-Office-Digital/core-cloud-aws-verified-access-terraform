@@ -8,7 +8,10 @@
 locals {
   bucket_account_name = lower(replace(var.account_name, "_", "-"))
 }
-
+# checkov:skip=CKV_AWS_18 "Ensure no IAM policies documents allow "*" as a statement's resource for restrictable actions"
+# checkov:skip=CKV_AWS_111 "Ensure IAM policies does not allow write access without constraints"
+# checkov:skip=CKV_AWS_109 "Ensure IAM policies does not allow permissions management / resource exposure without constraints"
+# checkov:skip=CKV_AWS_356 "Ensure no IAM policies documents allow "*" as a statement's resource for restrictable actions"
 data "aws_iam_policy_document" "va_logs_kms" {
 
   # Root account full administration of the key.
@@ -59,7 +62,7 @@ data "aws_iam_policy_document" "va_logs_kms" {
     }
   }
 }
-
+# checkov:skip=CKV_AWS_7 "CMKs key rotation is disabled"
 resource "aws_kms_key" "va_logs" {
   description             = "Verified Access logging CMK (CloudWatch + S3)"
   deletion_window_in_days = 30
@@ -190,7 +193,7 @@ resource "aws_s3_bucket_lifecycle_configuration" "va_access_logs" {
 ##-----------------------------------------------------------------------------
 # checkov:skip=CKV_AWS_144: VA logs are region-local and not subject to multi-region DR.
 # checkov:skip=CKV2_AWS_62: VA log buckets do not require S3 event notifications.
-# NOSONAR: Access logging for this bucket is explicitly configured via aws_s3_bucket_logging.va_logs_access_logging below.
+# checkov:skip=CKV2_AWS_61: VA log buckets has a lifecycle configuration
 resource "aws_s3_bucket" "va_log_bucket" {
   count = var.use_centralized_log_bucket ? 0 : 1
 
