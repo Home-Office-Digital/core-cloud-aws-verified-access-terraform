@@ -105,7 +105,7 @@ resource "aws_cloudwatch_log_group" "va_logs" {
 # checkov:skip=CKV_AWS_145: S3 server access logging delivery does not support SSE-KMS destinations.
 # checkov:skip=CKV2_AWS_62: VA log buckets do not require S3 event notifications.
 # NOSONAR: This is the server access log destination bucket; S3 does not support enabling access logging to itself.
-resource "aws_s3_bucket" "va_access_logs" {
+resource "aws_s3_bucket" "va_access_logs" { # NOSONAR: HTTPS-only is enforced via aws_s3_bucket_policy.va_access_logs_https_only.
   count = var.use_centralized_log_bucket ? 0 : 1
 
   bucket = "${var.name_prefix}-${local.bucket_account_name}-verified-access-access-logs"
@@ -228,7 +228,7 @@ resource "aws_s3_bucket_lifecycle_configuration" "va_access_logs" {
 # checkov:skip=CKV_AWS_144: VA logs are region-local and not subject to multi-region DR.
 # checkov:skip=CKV2_AWS_62: VA log buckets do not require S3 event notifications.
 # checkov:skip=CKV2_AWS_61: VA log buckets has a lifecycle configuration
-resource "aws_s3_bucket" "va_log_bucket" {
+resource "aws_s3_bucket" "va_log_bucket" { # NOSONAR: HTTPS-only is enforced via aws_s3_bucket_policy.va_log_bucket_https_only.
   count = var.use_centralized_log_bucket ? 0 : 1
 
   bucket = "${var.name_prefix}-${local.bucket_account_name}-verified-access-logs"
