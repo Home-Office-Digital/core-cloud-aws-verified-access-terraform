@@ -1,67 +1,65 @@
-name: SAST Scans
+name: Checkov and SonarQube Scan
 
 on:
-  workflow_call:
-    secrets:
-      sonar_token:
-        required: true
-      sonar_host_url:
-        required: true
-  push:
-    branches:
-      - main
   pull_request:
     branches:
       - main
+    paths:
+      - 'modules/**'
+  push:
+    branches:
+      - main
+    paths:
+      - 'modules/**'
+  workflow_dispatch: {}
 
 permissions:
+  actions: read
   contents: read
   id-token: write
-  actions: read
   security-events: write
+  pull-requests: read
 
 jobs:
-  checkov-scan:
-    name: Run Terraform SAST
-    uses: UKHomeOffice/core-cloud-workflow-checkov-sast-scan/.github/workflows/checkov-scan-base.yaml@1.7.0
-    with:
-      path: '.'
-  sonarqube-scan:
-    name: Run SonarQube Scan
+  checkov_scan:
+    name: Checkov SAST Scan
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
-      - name: Build SonarQube arguments
-        id: build_args
+      - name: Run Checkov SAST Scan
+        uses: UKHomeOffice/core-cloud-workflow-checkov-sast-scan@1.7.0
+        with:
+          path: modules
+
+  sonarqube_scan:
+    name: SonarQube Scan
+    runs-on: ubuntu-latest
+    needs: checkov_scan
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Write sonar-project.properties
         run: |
-          EXTRA_ARGS=""
-          # Check if 'sonar.projectKey' is already defined in the properties file.
-          if ! grep -q "sonar.projectKey" sonar-project.properties; then
-            echo "sonar.projectKey not found in properties file. Using repo name as fallback."
-            EXTRA_ARGS="${EXTRA_ARGS} -Dsonar.projectKey=${{ github.event.repository.name }}"
-          fi
-          # Check if 'sonar.projectName' is already defined in the properties file.
-          if ! grep -q "sonar.projectName" sonar-project.properties; then
-            echo "sonar.projectName not found in properties file. Using repo name as fallback."
-            EXTRA_ARGS="${EXTRA_ARGS} -Dsonar.projectName=${{ github.event.repository.name }}"
-          fi
-          echo "sonar-args=$EXTRA_ARGS" >> "$GITHUB_OUTPUT"
+          cat > sonar-project.properties << 'EOF'
+          sonar.projectKey=core-cloud-aws-verified-access-terraform
+          sonar.projectName=CC Verified Access TF Modules
+          sonar.sources=modules
+          sonar.exclusions=**/.terragrunt-cache/**,**/outputs/**,**/*.tfplan
+          sonar.qualitygate.wait=false
+          sonar.issues.fail=false
+          sonar.scm.provider=git
+          EOF
 
-      - id: sonar-scan
-        uses: sonarsource/sonarqube-scan-action@v6
-        env:
-          SONAR_TOKEN: ${{ secrets.sonar_token }}
-          SONAR_HOST_URL: ${{ secrets.sonar_host_url }}
+          echo "Generated sonar-project.properties:"
+          cat sonar-project.properties
+
+      - name: SonarQube Scan
+        uses: UKHomeOffice/core-cloud-workflow-sonarqube-scan@1.1.4
         with:
-          scannerBinariesUrl: https://repo1.maven.org/maven2/org/sonarsource/scanner/cli/sonar-scanner-cli/7.2.0.5079
-          args: >
-            ${{ steps.build_args.outputs.sonar-args }}
-            -Dsonar.sources=.
-            -Dsonar.qualitygate.wait=false
-            -Dsonar.sarif.path=sonar-report.sarif
-            -Dsonar.terraform.provider.aws.version=5.0
-            -Dsonar.scm.provider=git
+          sonar_token: ${{ secrets.SONAR_TOKEN }}
+          sonar_host_url: ${{ secrets.SONAR_HOST_URL }}
