@@ -106,7 +106,7 @@ resource "aws_cloudwatch_log_group" "va_logs" {
 # checkov:skip=CKV2_AWS_62: VA log buckets do not require S3 event notifications.
 # NOSONAR: Safe by design. This is the destination bucket for server access logs, and S3 does not support logging a destination bucket to itself.
 # NOSONAR: Logging is not disabled overall; the primary bucket aws_s3_bucket.va_log_bucket logs to this bucket via aws_s3_bucket_logging.va_logs_access_logging.
-resource "aws_s3_bucket" "va_access_logs" {
+resource "aws_s3_bucket" "va_access_logs" { # NOSONAR: Safe here. This bucket is the server access log destination (S3 cannot self-log) and HTTPS-only is enforced by aws_s3_bucket_policy.va_access_logs_https_only.
   count = var.use_centralized_log_bucket ? 0 : 1
 
   bucket = "${var.name_prefix}-${local.bucket_account_name}-verified-access-access-logs"
@@ -221,9 +221,9 @@ resource "aws_s3_bucket_lifecycle_configuration" "va_access_logs" {
 # checkov:skip=CKV_AWS_144: VA logs are region-local and not subject to multi-region DR.
 # checkov:skip=CKV2_AWS_62: VA log buckets do not require S3 event notifications.
 # checkov:skip=CKV2_AWS_61: VA log buckets has a lifecycle configuration
-# NOSONAR: Safe by design. This is the destination bucket for server access logs, and S3 does not support logging a destination bucket to itself.
-# NOSONAR: Logging is not disabled overall; the primary bucket aws_s3_bucket.va_log_bucket logs to this bucket via aws_s3_bucket_logging.va_logs_access_logging.
-resource "aws_s3_bucket" "va_log_bucket" {
+# NOSONAR: Safe by design. Logging is not disabled for this bucket; access logging is enabled via aws_s3_bucket_logging.va_logs_access_logging.
+# NOSONAR: When var.use_centralized_log_bucket is true this local bucket is not created (count = 0) and logs are written to the centralized bucket instead.
+resource "aws_s3_bucket" "va_log_bucket" { # NOSONAR: HTTPS-only is enforced by aws_s3_bucket_policy.va_log_bucket_https_only.
   count = var.use_centralized_log_bucket ? 0 : 1
 
   bucket = "${var.name_prefix}-${local.bucket_account_name}-verified-access-logs"
