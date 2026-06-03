@@ -149,38 +149,30 @@ resource "aws_s3_bucket_public_access_block" "va_access_logs" {
   restrict_public_buckets = true
 }
 
-data "aws_iam_policy_document" "va_access_logs_https_only" {
-  count = var.use_centralized_log_bucket ? 0 : 1
-
-  statement {
-    sid    = "DenyInsecureTransport"
-    effect = "Deny"
-
-    principals {
-      type        = "*"
-      identifiers = ["*"]
-    }
-
-    actions = ["s3:*"]
-
-    resources = [
-      aws_s3_bucket.va_access_logs[0].arn,
-      "${aws_s3_bucket.va_access_logs[0].arn}/*"
-    ]
-
-    condition {
-      test     = "Bool"
-      variable = "aws:SecureTransport"
-      values   = ["false"]
-    }
-  }
-}
-
 resource "aws_s3_bucket_policy" "va_access_logs_https_only" {
   count = var.use_centralized_log_bucket ? 0 : 1
 
   bucket = aws_s3_bucket.va_access_logs[0].id
-  policy = data.aws_iam_policy_document.va_access_logs_https_only[0].json
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid       = "DenyInsecureTransport"
+        Effect    = "Deny"
+        Principal = "*"
+        Action    = "s3:*"
+        Resource = [
+          aws_s3_bucket.va_access_logs[0].arn,
+          "${aws_s3_bucket.va_access_logs[0].arn}/*"
+        ]
+        Condition = {
+          Bool = {
+            "aws:SecureTransport" = "false"
+          }
+        }
+      }
+    ]
+  })
 }
 
 resource "aws_s3_bucket_versioning" "va_access_logs" {
@@ -267,38 +259,30 @@ resource "aws_s3_bucket_public_access_block" "va_logs_block_public" {
   restrict_public_buckets = true
 }
 
-data "aws_iam_policy_document" "va_log_bucket_https_only" {
-  count = var.use_centralized_log_bucket ? 0 : 1
-
-  statement {
-    sid    = "DenyInsecureTransport"
-    effect = "Deny"
-
-    principals {
-      type        = "*"
-      identifiers = ["*"]
-    }
-
-    actions = ["s3:*"]
-
-    resources = [
-      aws_s3_bucket.va_log_bucket[0].arn,
-      "${aws_s3_bucket.va_log_bucket[0].arn}/*"
-    ]
-
-    condition {
-      test     = "Bool"
-      variable = "aws:SecureTransport"
-      values   = ["false"]
-    }
-  }
-}
-
 resource "aws_s3_bucket_policy" "va_log_bucket_https_only" {
   count = var.use_centralized_log_bucket ? 0 : 1
 
   bucket = aws_s3_bucket.va_log_bucket[0].id
-  policy = data.aws_iam_policy_document.va_log_bucket_https_only[0].json
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid       = "DenyInsecureTransport"
+        Effect    = "Deny"
+        Principal = "*"
+        Action    = "s3:*"
+        Resource = [
+          aws_s3_bucket.va_log_bucket[0].arn,
+          "${aws_s3_bucket.va_log_bucket[0].arn}/*"
+        ]
+        Condition = {
+          Bool = {
+            "aws:SecureTransport" = "false"
+          }
+        }
+      }
+    ]
+  })
 }
 
 resource "aws_s3_bucket_versioning" "va_logs_versioning" {
