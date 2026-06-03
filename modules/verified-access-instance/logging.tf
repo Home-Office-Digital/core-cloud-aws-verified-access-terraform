@@ -104,7 +104,8 @@ resource "aws_cloudwatch_log_group" "va_logs" {
 # checkov:skip=CKV_AWS_144: VA logs are region-local and not subject to multi-region DR.
 # checkov:skip=CKV_AWS_145: S3 server access logging delivery does not support SSE-KMS destinations.
 # checkov:skip=CKV2_AWS_62: VA log buckets do not require S3 event notifications.
-# NOSONAR: This is the server access log destination bucket; S3 does not support enabling access logging to itself.
+# NOSONAR: Safe by design. This is the destination bucket for server access logs, and S3 does not support logging a destination bucket to itself.
+# NOSONAR: Logging is not disabled overall; the primary bucket aws_s3_bucket.va_log_bucket logs to this bucket via aws_s3_bucket_logging.va_logs_access_logging.
 resource "aws_s3_bucket" "va_access_logs" {
   count = var.use_centralized_log_bucket ? 0 : 1
 
@@ -228,6 +229,8 @@ resource "aws_s3_bucket_lifecycle_configuration" "va_access_logs" {
 # checkov:skip=CKV_AWS_144: VA logs are region-local and not subject to multi-region DR.
 # checkov:skip=CKV2_AWS_62: VA log buckets do not require S3 event notifications.
 # checkov:skip=CKV2_AWS_61: VA log buckets has a lifecycle configuration
+# NOSONAR: Safe by design. This is the destination bucket for server access logs, and S3 does not support logging a destination bucket to itself.
+# NOSONAR: Logging is not disabled overall; the primary bucket aws_s3_bucket.va_log_bucket logs to this bucket via aws_s3_bucket_logging.va_logs_access_logging.
 resource "aws_s3_bucket" "va_log_bucket" {
   count = var.use_centralized_log_bucket ? 0 : 1
 
