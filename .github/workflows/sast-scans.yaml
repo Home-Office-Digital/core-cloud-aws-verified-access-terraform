@@ -28,7 +28,40 @@ jobs:
       path: '.'
   sonarqube-scan:
     name: Run SonarQube Scan
-    uses: UKHomeOffice/core-cloud-workflow-sonarqube-scan/.github/workflows/sonarqube-scan.yaml@1.1.3
-    secrets:
-      sonar_token: ${{ secrets.sonar_token }}
-      sonar_host_url: ${{ secrets.sonar_host_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Build SonarQube arguments
+        id: build_args
+        run: |
+          EXTRA_ARGS=""
+          # Check if 'sonar.projectKey' is already defined in the properties file.
+          if ! grep -q "sonar.projectKey" sonar-project.properties; then
+            echo "sonar.projectKey not found in properties file. Using repo name as fallback."
+            EXTRA_ARGS="${EXTRA_ARGS} -Dsonar.projectKey=${{ github.event.repository.name }}"
+          fi
+          # Check if 'sonar.projectName' is already defined in the properties file.
+          if ! grep -q "sonar.projectName" sonar-project.properties; then
+            echo "sonar.projectName not found in properties file. Using repo name as fallback."
+            EXTRA_ARGS="${EXTRA_ARGS} -Dsonar.projectName=${{ github.event.repository.name }}"
+          fi
+          echo "sonar-args=$EXTRA_ARGS" >> "$GITHUB_OUTPUT"
+
+      - id: sonar-scan
+        uses: sonarsource/sonarqube-scan-action@v6
+        env:
+          SONAR_TOKEN: ${{ secrets.sonar_token }}
+          SONAR_HOST_URL: ${{ secrets.sonar_host_url }}
+        with:
+          scannerBinariesUrl: https://repo1.maven.org/maven2/org/sonarsource/scanner/cli/sonar-scanner-cli/7.2.0.5079
+          args: >
+            ${{ steps.build_args.outputs.sonar-args }}
+            -Dsonar.sources=.
+            -Dsonar.qualitygate.wait=false
+            -Dsonar.sarif.path=sonar-report.sarif
+            -Dsonar.terraform.provider.aws.version=5.0
+            -Dsonar.scm.provider=git
