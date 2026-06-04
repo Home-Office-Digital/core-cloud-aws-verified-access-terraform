@@ -172,3 +172,51 @@ run "rejects_endpoint_when_group_mapping_missing" {
     aws_verifiedaccess_endpoint.this,
   ]
 }
+
+run "uses_default_endpoint_domain_prefix_when_not_set" {
+  command = plan
+
+  variables {
+    endpoints = {
+      "corp-access" = {
+        group_name    = "AWSVerifiedAccess-Platform-App"
+        endpoint_type = "cidr"
+        cidr_options = {
+          cidr         = "10.0.0.0/24"
+          protocol     = "tcp"
+          subnet_names = ["private-a"]
+          port_range = {
+            from = 443
+            to   = 443
+          }
+        }
+      }
+    }
+  }
+
+  assert {
+    condition     = contains(keys(output.security_group_ids), "corp-access")
+    error_message = "Expected module to create a security group for the endpoint using default domain prefix behavior."
+  }
+}
+
+run "rejects_load_balancer_endpoint_without_certificate" {
+  command = plan
+
+  variables {
+    default_certificate_domain = null
+    endpoints = {
+      "web-app" = {
+        group_name         = "AWSVerifiedAccess-Platform-App"
+        endpoint_type      = "load-balancer"
+        application_domain = "app.example.com"
+        load_balancer_name = "shared-app-lb"
+        port               = 443
+      }
+    }
+  }
+
+  expect_failures = [
+    aws_verifiedaccess_endpoint.this,
+  ]
+}

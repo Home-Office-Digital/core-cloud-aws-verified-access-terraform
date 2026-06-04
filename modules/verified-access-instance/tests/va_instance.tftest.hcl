@@ -107,3 +107,12 @@ run "creates_waf_association_when_enabled" {
     error_message = "Expected one WAF association when enable_waf is true."
   }
 }
+
+run "does_not_create_waf_association_by_default" {
+  command = plan
+
+  assert {
+    condition     = length(aws_wafv2_web_acl_association.va_assoc) == 0
+    error_message = "Expected no WAF association when enable_waf is not set."
+  }
+}

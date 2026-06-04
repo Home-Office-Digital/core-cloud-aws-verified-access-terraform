@@ -73,3 +73,17 @@ run "rejects_policy_override_for_unknown_group" {
     var.policy_documents,
   ]
 }
+
+run "uses_custom_policy_reference_name_in_default_policy" {
+  command = plan
+
+  variables {
+    policy_reference_name = "customref"
+    policy_documents      = {}
+  }
+
+  assert {
+    condition     = strcontains(aws_verifiedaccess_group.group["AWSVerifiedAccess-Platform-App"].policy_document, "context.customref.groups has \"AWSVerifiedAccess-Platform-App\"")
+    error_message = "Expected default policy template to use the provided policy_reference_name value."
+  }
+}

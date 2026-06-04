@@ -83,3 +83,16 @@ run "skips_groups_without_shareable_targets" {
     error_message = "Expected no endpoint snippets when no groups are shared."
   }
 }
+
+run "uses_account_id_when_name_mapping_missing" {
+  command = plan
+
+  variables {
+    principal_account_names_by_id = {}
+  }
+
+  assert {
+    condition     = output.endpoints_config_snippets["333333333333"]["AWSVerifiedAccess-Platform-App"] == "vagr-APP12345"
+    error_message = "Expected snippets to use raw account ID when no account-name mapping is provided."
+  }
+}
