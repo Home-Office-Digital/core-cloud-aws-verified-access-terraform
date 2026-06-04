@@ -90,7 +90,7 @@ locals {
         ip_protocol = "tcp"
         from_port   = e.port
         to_port     = e.port
-      } : {
+        } : {
         ip_protocol = e.cidr_options.protocol
         from_port   = e.cidr_options.port_range.from
         to_port     = e.cidr_options.port_range.to
