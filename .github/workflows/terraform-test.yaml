@@ -26,6 +26,6 @@ jobs:
     uses: ./.github/workflows/reusable-terraform-test.yaml
     with:
       modules_root: modules
-      terraform_version: 1.9.8
+      terraform_version: 1.13.4
       comment_on_pr: true
       pull_request_number: ${{ github.event.pull_request.number || '' }}

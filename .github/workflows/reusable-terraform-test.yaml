@@ -12,7 +12,7 @@ on:
         description: Terraform CLI version
         required: false
         type: string
-        default: 1.9.8
+        default: 1.13.4
       comment_on_pr:
         description: Post Terraform test summary comment on pull requests
         required: false
