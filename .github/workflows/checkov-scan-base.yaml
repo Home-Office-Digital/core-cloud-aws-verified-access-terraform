@@ -22,6 +22,6 @@ permissions:
    security-events: write
 jobs:
    sast-checkov-scan-plan:
-     uses: UKHomeOffice/core-cloud-workflow-checkov-sast-scan/.github/workflows/checkov-scan-base.yaml@main
+     uses: UKHomeOffice/core-cloud-workflow-checkov-sast-scan/.github/workflows/checkov-scan-base.yaml@b7a62a0b5f4dae8c50166d822b301109b76439da
      with:
       path: '.'
