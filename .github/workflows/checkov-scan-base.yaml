@@ -1,0 +1,27 @@
+name: "Checkov SAST Scan for Terraform .tfplan files as well as source code"
+ 
+on:
+   workflow_dispatch:
+   push:
+     branches:
+       - '*'
+     paths:
+       - ./**
+   pull_request:
+     branches:
+       - main
+     types:
+       - opened
+       - synchronize
+     paths:
+       - ./**
+permissions:
+   contents: read
+   id-token: write
+   actions: read
+   security-events: write
+jobs:
+   sast-checkov-scan-plan:
+     uses: UKHomeOffice/core-cloud-workflow-checkov-sast-scan/.github/workflows/checkov-scan-base.yaml@b7a62a0b5f4dae8c50166d822b301109b76439da
+     with:
+      path: '.'
